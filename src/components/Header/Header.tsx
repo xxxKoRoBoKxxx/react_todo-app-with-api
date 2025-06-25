@@ -8,16 +8,20 @@ type Props = {
     title: string,
     setTitle: React.Dispatch<React.SetStateAction<string>>,
   ) => void;
+  completeTodo: (todoId: number, status?: boolean) => void;
   tempTodo: Todo | null;
   allTodos: Todo[];
   completedTodos: Todo[];
+  uncompletedTodos: Todo[];
 };
 
 export const Header: React.FC<Props> = ({
   addTodo,
+  completeTodo,
   tempTodo,
   allTodos,
   completedTodos,
+  uncompletedTodos,
 }) => {
   const [title, setTitle] = useState<string>('');
 
@@ -25,6 +29,14 @@ export const Header: React.FC<Props> = ({
     event.preventDefault();
 
     addTodo(title, setTitle);
+  };
+
+  const handleToggleAll = () => {
+    if (allTodos.length === completedTodos.length) {
+      allTodos.forEach(todo => completeTodo(todo.id, false));
+    } else {
+      uncompletedTodos.forEach(todo => completeTodo(todo.id, true));
+    }
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -41,13 +53,13 @@ export const Header: React.FC<Props> = ({
 
   return (
     <header className="todoapp__header">
-      {/* this button should have `active` class only if all todos are completed */}
       <button
         type="button"
         className={classNames('todoapp__toggle-all', {
           active: allTodos.length === completedTodos.length,
         })}
         data-cy="ToggleAllButton"
+        onClick={handleToggleAll}
       />
 
       <form onSubmit={handleFormSubmit}>

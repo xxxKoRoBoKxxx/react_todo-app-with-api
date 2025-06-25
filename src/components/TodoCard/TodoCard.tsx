@@ -7,7 +7,7 @@ import { Todo } from '../../types/Todo';
 type Props = {
   todo: Todo;
   deleteTodo: (todoId: number) => void;
-  completeTodo?: (todoId: number) => void;
+  completeTodo?: (todoId: number, status?: boolean) => void;
 };
 
 export const TodoCard: React.FC<Props> = ({

@@ -13,8 +13,8 @@ import { wait } from './utils/fetchClient';
 import { filteringTodos } from './utils/queueTodos';
 import { countItemsLeft } from './utils/countItemsLeft';
 import { ErrorMsg } from './utils/ErrorMsg';
-import { Todo } from './types/Todo';
 import { TodoFilter } from './utils/TodoFilter';
+import { Todo } from './types/Todo';
 
 import { UserWarning } from './UserWarning';
 import { Header } from './components/Header';
@@ -40,6 +40,7 @@ export const App: React.FC = () => {
     return <UserWarning />;
   }
 
+  const uncompletedTodos: Todo[] = allTodos.filter(todo => !todo.completed);
   const completedTodos: Todo[] = allTodos.filter(todo => todo.completed);
   const queuedTodos: Todo[] = filteringTodos(allTodos, filter);
   const itemsLeft: number = countItemsLeft(allTodos);
@@ -103,7 +104,7 @@ export const App: React.FC = () => {
       });
   };
 
-  const completeTodo = (todoId: number): void => {
+  const completeTodo = (todoId: number, status?: boolean): void => {
     const updatingTodo = allTodos.find(todo => todo.id === todoId);
 
     if (!updatingTodo) {
@@ -119,7 +120,7 @@ export const App: React.FC = () => {
             if (todo.id === todoId) {
               const newTodo = todo;
 
-              newTodo.completed = !newTodo.completed;
+              newTodo.completed = status ? status : !newTodo.completed;
 
               return newTodo;
             } else {
@@ -129,7 +130,7 @@ export const App: React.FC = () => {
         );
       })
       .catch(() => {
-        setError(ErrorMsg.DELETE_TODO_ERROR);
+        setError(ErrorMsg.UPDATE_TODO_ERROR);
         wait(3000, true).then(() => setError(''));
       })
       .finally(() => {
@@ -144,9 +145,11 @@ export const App: React.FC = () => {
       <div className="todoapp__content">
         <Header
           addTodo={addTodo}
+          completeTodo={completeTodo}
           tempTodo={tempTodo}
           allTodos={allTodos}
           completedTodos={completedTodos}
+          uncompletedTodos={uncompletedTodos}
         />
 
         <TodoList
