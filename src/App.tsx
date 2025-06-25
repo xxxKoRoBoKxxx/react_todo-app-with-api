@@ -152,17 +152,15 @@ export const App: React.FC = () => {
       return;
     }
 
-    if(title.length === 0) {
-        setError(ErrorMsg.EMPTY_TITLE);
-        wait(3000, true).then(() => setError(''));
+    if (title.length === 0) {
+      setError(ErrorMsg.EMPTY_TITLE);
+      wait(3000, true).then(() => setError(''));
     }
 
     setLoading(todoId, true);
 
     return new Promise(resolve => {
       updateTodoTitle(todoId, title).then(() => {
-        setLoading(todoId, false);
-
         setAllTodos(todos =>
           todos.map(todo => {
             if (todo.id === todoId) {
@@ -177,7 +175,9 @@ export const App: React.FC = () => {
           }),
         );
 
-        resolve();
+        resolve().finally(() => {
+          setLoading(todoId, false);
+        });
       });
     });
   };
