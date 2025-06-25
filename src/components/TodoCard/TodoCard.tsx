@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/indent */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import classNames from 'classnames';
 import { Todo } from '../../types/Todo';
@@ -7,23 +8,70 @@ import { Todo } from '../../types/Todo';
 type Props = {
   todo: Todo;
   deleteTodo: (todoId: number) => void;
-  completeTodo?: (todoId: number, status?: boolean) => void;
+  changeTodoCompleteStatus?: (todoId: number, status?: boolean) => void;
+  changeTodoTitle?: (
+    todoId: number,
+    title: string,
+  ) => Promise<void> | undefined;
 };
 
 export const TodoCard: React.FC<Props> = ({
   todo,
   deleteTodo,
-  completeTodo,
+  changeTodoCompleteStatus,
+  changeTodoTitle,
 }) => {
   const { id, title, completed, loading } = todo;
+
+  const [editing, setEditing] = useState<boolean>(false);
+  const [editingTitle, setEditingTitle] = useState<string>(title);
+
+  const handleEscapeDown = (event: KeyboardEvent) => {
+    if (event.code === 'Escape') {
+      setEditing(false);
+      setEditingTitle(title);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscapeDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeDown);
+    };
+  }, []);
 
   const handleDelete = () => {
     deleteTodo(id);
   };
 
   const handleComplete = () => {
-    if (completeTodo) {
-      completeTodo(id);
+    if (changeTodoCompleteStatus) {
+      changeTodoCompleteStatus(id);
+    }
+  };
+
+  const handleDoubleClick = () => {
+    setEditing(true);
+  };
+
+  const handleEditingSubmit = (
+    event:
+      | React.FocusEvent<HTMLInputElement>
+      | React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    if (editingTitle === title) {
+      setEditing(false);
+
+      return;
+    }
+
+    if (changeTodoTitle) {
+      changeTodoTitle(id, editingTitle)?.then(() => {
+        setEditing(false);
+      });
     }
   };
 
@@ -43,18 +91,41 @@ export const TodoCard: React.FC<Props> = ({
         />
       </label>
 
-      <span data-cy="TodoTitle" className="todo__title">
-        {title}
-      </span>
+      {!editing && (
+        <>
+          {' '}
+          <span
+            data-cy="TodoTitle"
+            className="todo__title"
+            onDoubleClick={handleDoubleClick}
+          >
+            {title}
+          </span>
+          <button
+            type="button"
+            className="todo__remove"
+            data-cy="TodoDelete"
+            onClick={handleDelete}
+          >
+            ×
+          </button>
+        </>
+      )}
 
-      <button
-        type="button"
-        className="todo__remove"
-        data-cy="TodoDelete"
-        onClick={handleDelete}
-      >
-        ×
-      </button>
+      {editing && (
+        <form onSubmit={handleEditingSubmit}>
+          <input
+            data-cy="TodoTitleField"
+            type="text"
+            className="todo__title-field"
+            placeholder="Empty todo will be deleted"
+            value={editingTitle}
+            onChange={event => setEditingTitle(event.target.value)}
+            onBlur={handleEditingSubmit}
+            autoFocus
+          />
+        </form>
+      )}
 
       <div
         data-cy="TodoLoader"

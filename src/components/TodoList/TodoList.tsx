@@ -8,14 +8,16 @@ type Props = {
   todos: Todo[];
   tempTodo: Todo | null;
   deleteTodo: (todoId: number) => void;
-  completeTodo: (todoId: number, status?: boolean) => void;
+  changeTodoCompleteStatus: (todoId: number, status?: boolean) => void;
+  changeTodoTitle: (todoId: number, title: string) => Promise<void> | undefined;
 };
 
 export const TodoList: React.FC<Props> = ({
   todos,
   tempTodo,
   deleteTodo,
-  completeTodo,
+  changeTodoCompleteStatus,
+  changeTodoTitle,
 }) => {
   let tempTodoToRender = {
     id: 0,
@@ -36,7 +38,8 @@ export const TodoList: React.FC<Props> = ({
           key={todo.id}
           todo={todo}
           deleteTodo={deleteTodo}
-          completeTodo={completeTodo}
+          changeTodoCompleteStatus={changeTodoCompleteStatus}
+          changeTodoTitle={changeTodoTitle}
         />
       ))}
       {Boolean(tempTodo) && (

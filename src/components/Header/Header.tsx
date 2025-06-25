@@ -53,14 +53,16 @@ export const Header: React.FC<Props> = ({
 
   return (
     <header className="todoapp__header">
-      <button
-        type="button"
-        className={classNames('todoapp__toggle-all', {
-          active: allTodos.length === completedTodos.length,
-        })}
-        data-cy="ToggleAllButton"
-        onClick={handleToggleAll}
-      />
+      {Boolean(allTodos.length) && (
+        <button
+          type="button"
+          className={classNames('todoapp__toggle-all', {
+            active: allTodos.length === completedTodos.length,
+          })}
+          data-cy="ToggleAllButton"
+          onClick={handleToggleAll}
+        />
+      )}
 
       <form onSubmit={handleFormSubmit}>
         <input

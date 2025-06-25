@@ -7,6 +7,7 @@ import {
   deleteTodoFromServer,
   getTodos,
   updateTodoComplete,
+  updateTodoTitle,
   USER_ID,
 } from './api/todos';
 import { wait } from './utils/fetchClient';
@@ -29,10 +30,13 @@ export const App: React.FC = () => {
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
 
   useEffect(() => {
+    setError('');
+
     getTodos()
       .then(setAllTodos)
       .catch(() => {
         setError(ErrorMsg.LIST_LOAD_ERROR);
+        wait(3000, true).then(() => setError(''));
       });
   }, []);
 
@@ -45,10 +49,10 @@ export const App: React.FC = () => {
   const queuedTodos: Todo[] = filteringTodos(allTodos, filter);
   const itemsLeft: number = countItemsLeft(allTodos);
 
-  const setLoading = (todoId: number, load: boolean) => {
+  const setLoading = (todoId: number, loadStatus: boolean) => {
     setAllTodos(currentTodos => {
       return currentTodos.map(todo =>
-        todo.id === todoId ? { ...todo, loading: load } : todo,
+        todo.id === todoId ? { ...todo, loading: loadStatus } : todo,
       );
     });
   };
@@ -104,7 +108,7 @@ export const App: React.FC = () => {
       });
   };
 
-  const completeTodo = (todoId: number, status?: boolean): void => {
+  const changeTodoCompleteStatus = (todoId: number, status?: boolean): void => {
     const updatingTodo = allTodos.find(todo => todo.id === todoId);
 
     if (!updatingTodo) {
@@ -138,6 +142,41 @@ export const App: React.FC = () => {
       });
   };
 
+  const changeTodoTitle = (
+    todoId: number,
+    title: string,
+  ): Promise<void> | undefined => {
+    const updatingTodo = allTodos.find(todo => todo.id === todoId);
+
+    if (!updatingTodo) {
+      return;
+    }
+
+    setLoading(todoId, true);
+
+    return new Promise(resolve => {
+      updateTodoTitle(todoId, title).then(() => {
+        setLoading(todoId, false);
+
+        setAllTodos(todos =>
+          todos.map(todo => {
+            if (todo.id === todoId) {
+              const newTodo = todo;
+
+              newTodo.title = title;
+
+              return newTodo;
+            } else {
+              return todo;
+            }
+          }),
+        );
+
+        resolve();
+      });
+    });
+  };
+
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
@@ -145,7 +184,7 @@ export const App: React.FC = () => {
       <div className="todoapp__content">
         <Header
           addTodo={addTodo}
-          completeTodo={completeTodo}
+          completeTodo={changeTodoCompleteStatus}
           tempTodo={tempTodo}
           allTodos={allTodos}
           completedTodos={completedTodos}
@@ -156,7 +195,8 @@ export const App: React.FC = () => {
           todos={queuedTodos}
           tempTodo={tempTodo}
           deleteTodo={deleteTodo}
-          completeTodo={completeTodo}
+          changeTodoCompleteStatus={changeTodoCompleteStatus}
+          changeTodoTitle={changeTodoTitle}
         />
 
         {allTodos.length > 0 && (
