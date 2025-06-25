@@ -152,6 +152,11 @@ export const App: React.FC = () => {
       return;
     }
 
+    if(title.length === 0) {
+        setError(ErrorMsg.EMPTY_TITLE);
+        wait(3000, true).then(() => setError(''));
+    }
+
     setLoading(todoId, true);
 
     return new Promise(resolve => {

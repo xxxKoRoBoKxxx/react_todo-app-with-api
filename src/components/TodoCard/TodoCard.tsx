@@ -69,7 +69,7 @@ export const TodoCard: React.FC<Props> = ({
     }
 
     if (changeTodoTitle) {
-      changeTodoTitle(id, editingTitle)?.then(() => {
+      changeTodoTitle(id, editingTitle.trim())?.then(() => {
         setEditing(false);
       });
     }
